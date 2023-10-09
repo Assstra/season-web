@@ -1,0 +1,3 @@
+[submodule "ExpoFront"]
+	path = ExpoFront
+	url = git@github.com:Hunh0w/ExpoFront.git
