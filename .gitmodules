@@ -1,3 +1,6 @@
 [submodule "ExpoFront"]
 	path = ExpoFront
 	url = git@github.com:Hunh0w/ExpoFront.git
+[submodule "seasoning-api"]
+	path = seasoning-api
+	url = git@github.com:Hunh0w/SeasoningAPI.git
