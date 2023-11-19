@@ -26,6 +26,3 @@ L'ensemble des Databases seront sous PostgreSQL
 ### Diagramme métier de l'application
 
 ![](imgs/vue_metier.png)
-
-### Diagramme des données
-
