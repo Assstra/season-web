@@ -10,43 +10,45 @@ Le glossaire du projet est disponible [Ici](glossaire.md). Nous ne redéfinirons
 
 ### Objectifs
 
-Le but de cet application est de simplifier la mise en relation entre les employeurs et les saisonniers en recherche d'emploi. L'application offre une interface mobile qui permet de facilement trouver un emploi correspondant aux contraintes du saisonnier.
+Le but de cette application est de simplifier la mise en relation entre les employeurs et les saisonniers en recherche d'emploi. L'application offre une interface web mobile qui permet de facilement trouver un emploi correspondant aux contraintes du saisonnier.
 
 ### Planning
 
 Le projet devra être évalué fin décembre pour être rendu dans les semaines qui suivent.
-Des tests seront réalisés fin novembre pour garantir la qualité du projet.
+Des tests seront réalisés fin novembre afin de garantir la qualité du projet et la conformité avec les attendus.
 
 ## Contraintes
 
-Voici un diagramme décrivant les fonctionalités nécéssaires au bon fonctionnement de l'application :
+Voici un diagramme décrivant les fonctionalités à implémenter nécessaires au bon fonctionnement de l'application :
 ![](imgs/vue_metier.png)
 
 
-De plus, une API Gateway sera en charge des communications entre l'application web et les différents services associés.
-Spring security ou / et Keycloak devront être utilisés pour garantir la sécurité de l'application lors de l'authentification.
+De plus, une API Gateway sera en charge des communications entre l'application web et les différents autres services.
+Spring security et Keycloak seront utilisés pour garantir la sécurité de l'application lors de l'authentification.
 
 
 ## Architecture cible
 
 ### Architecture applicative générale
 
-Seasoning est constitué de plusieurs micro-services indépendant.
+L'application mobile *Seasoning* est constituée de plusieurs micro-services indépendants.
 
-Tous les microservices se positionneront directement derrière une Gateway qui servira d'interface entre l'utilisateur et les microservices.
+Tous les micro-services se positionneront directement derrière une Gateway qui servira d'interface entre l'utilisateur et les microservices.
 
-Keycloak est une partie également distincte de ces microservices, chacun d'entre eux aura sa propre base de donnée car nous avons décidé de les désigner par leur fonction.
+Keycloak est une partie également distincte de ces micro-services, ce qui signifie que chacun d'entre eux disposera de sa propre base de donnée afin de séparer les fonctions de ces services.
 
+Voici un diagramme représentant toutes les fonctions nécessaires au bon fonctionnement de l'application :
 ![](imgs/vueapp.png)
 
 ### Architecture applicative détaillée
 
-Voici plus en détail la liste des services :
+Voici plus en détails la liste des services :
 
 #### **Application front-end : affiche l'interface de l'application**
 
 #### **API Gateway : gère les communications entre l'application front-end et les différents micro-services**
-#### **Microservice des saisonniers : Gère les profils des saisonniers et toutes modifications relatives à celui-ci**
+
+#### **Micro-service des saisonniers : Gère les profils des saisonniers et toutes modifications relatives à celui-ci**
 
 - GET /profile
 - PATCH /profile
@@ -71,7 +73,7 @@ Voici plus en détail la liste des services :
 - PUT /profile/advice/:advice_id
 - DELETE /profile/advice/:advice_id
 
-#### **Microservice des offres : En charge de la gestion des offres et des opérations pouvant être réalisés**
+#### **Micro-service des offres : En charge de la gestion des offres et des opérations pouvant être réalisés**
 
 - GET /offers
 - GET /offer/candidatgère les données des saisonnierses
@@ -79,19 +81,19 @@ Voici plus en détail la liste des services :
 - DELETE /offer/candidate/:offer_id
 - PATCH /candidacy/:candidacy_id    (Used to modify the state of the candidacy)
 
-#### **Microservice des employeurs : Gère les données des employeurs**
+#### **Micro-service des employeurs : Gère les données des employeurs**
 
 - GET /employers
 
-#### **Microservice des messages : Manage les messages et les stocke en base de données**
+#### **Micro-service des messages : Manage les messages et les stocke en base de données**
 
 - GET /messages (return last message sent to an employer in all conversations)
 - POST /message/:employer_id
 
-#### **Service keycloak : utilise OIDC pour gérer les demandes de connexion entrantes**
+#### **Service [keycloak](https://www.keycloak.org/) : utilise OIDC pour gérer les demandes de connexion entrantes**
 
-Ce service s'occupe des demandes de connexion et d'inscription. Il utilise le protocol OpenIDConnect pour fournir un JWT à l'utilisateur qui lui permet de se connecter à l'application web mobile.
-Spring security, un framework Java réceptionne le token du client et l'utilise dans les différents micro-service pour autoriser l'utilisateur à accéder à l'application.
+Ce service s'occupe des demandes de connexion et d'inscription. Il utilise le protocol OpenIDConnect pour fournir un JWT à l'utilisateur pour lui permettre de se connecter à l'application web mobile.  
+[Spring security](https://spring.io/projects/spring-security), un framework Java, réceptionne le token du client et l'utilise dans les différents micro-services pour autoriser l'utilisateur à accéder à ces derniers.
 
 ![](imgs/infrastructure_seasoning.png)
 
@@ -99,15 +101,15 @@ Spring security, un framework Java réceptionne le token du client et l'utilise 
 
 ### Front-end
 
-Pour le front-end nous avons utilisé React native, un framework multiplateforme pour le développement d'applications mobiles qui permet aux développeurs de créer des applications performantes en utilisant JavaScript et React, favorisant la réutilisation du code sur les plateformes iOS et Android. Il est populaire pour son efficacité, sa rapidité et sa capacité à rationaliser les processus de développement et c'est pour ces simplicités que nous l'avons utilisé.
+Pour le front-end nous avons utilisé [React native](https://reactnative.dev/), un framework multiplateforme pour le développement d'applications mobiles qui permet aux développeurs de créer des applications performantes en utilisant JavaScript et React, favorisant la réutilisation du code sur les plateformes iOS et Android. Il est populaire pour son efficacité, sa rapidité et sa capacité à rationaliser les processus de développement et c'est pour ces simplicités que nous l'avons utilisé.
 
 ### API Gatway
 
-L'API Gateway est rédigée en JAVA et utilise le framework Spring qui simplifie le développement d'applications en fournissant des fonctionnalités étendues, telles que l'inversion de contrôle et la gestion des transactions, favorisant la modularité et la flexibilité du code. Malgré sa courbe d'apprentissage complexe, ce framework permet une modularité et une facilité de developpement.
+L'API Gateway est rédigée en JAVA et utilise le framework Spring qui simplifie le développement d'applications en fournissant des fonctionnalités étendues, telles que l'inversion de contrôle et la gestion des transactions, favorisant la modularité et la flexibilité du code. Malgré sa courbe d'apprentissage complexe, ce framework permet une modularité et une facilité de développement.
 
 ### Communications entre services
 
-Nous utilisons GRPC, qui est construit sur HTTP/2 pour communiquer entre nos différents services. Il offre un grande simplification des appels HTTP et permet de partager des interfaces et ainsi éviter les problèmes de communication lors du développement du front-end et du back-end.
+Nous utilisons [GRPC](https://grpc.io/), qui utilise HTTP/2 pour communiquer entre nos différents services. Il offre un grande simplification des appels HTTP et sur le partage d'interfaces (de contrats) et évite les mauvaises compréhensions et clarifie les échanges lors du développement du front-end et du back-end.
 
-Néamoins, avec la nécéssité de vouloir communiquer de manière asynchrone, nous utiliserons un broker de messages type Kafka lors des communications avec le service de messagerie. Ce genre de technologie est plus résiliente et plus fiable et nous permet de gérer certaines erreures liées aux requètes HTTP classiques.
+Néamoins, avec la nécessité de vouloir communiquer de manière asynchrone, nous utiliserons un broker de messages comme Kafka lors des communications avec le service de messagerie. Ce genre de technologie est plus résiliente et plus fiable et nous permet de gérer certaines erreures liées aux requètes HTTP classiques.
 
