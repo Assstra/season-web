@@ -4,7 +4,7 @@
 
 Ceci est la vue applicative du projet. Elle décrit les modules applicatifs en jeu et leurs échanges.
 
-Le glossaire du projet est disponible link:glossaire.md[ici]. Nous ne redéfinirons pas ici les termes fonctionnels ou techniques utilisés.
+Le glossaire du projet est disponible [Ici](glossaire.md). Nous ne redéfinirons pas ici les termes fonctionnels ou techniques utilisés.
 
 ## Contexte général
 
