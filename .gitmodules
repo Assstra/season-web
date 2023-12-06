@@ -4,3 +4,6 @@
 [submodule "seasoning-api"]
 	path = seasoning-api
 	url = git@github.com:Hunh0w/SeasoningAPI.git
+[submodule "seasoning-offers"]
+	path = seasoning-offers
+	url = git@github.com:Hunh0w/Seasoning-Offers.git
