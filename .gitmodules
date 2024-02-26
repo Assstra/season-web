@@ -7,3 +7,6 @@
 [submodule "seasoning-offers"]
 	path = seasoning-offers
 	url = git@github.com:Hunh0w/Seasoning-Offers.git
+[submodule "seasoning-profile"]
+	path = seasoning-profile
+	url = git@github.com:Assstra/seasoning-profile.git
