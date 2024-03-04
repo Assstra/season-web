@@ -1,0 +1,142 @@
+services:
+
+  # REVERSE PROXY
+  traefik:
+    image: "traefik:v2.10"
+    command:
+      #- "--log.level=DEBUG"
+      # For API only (diasble in production)
+      # - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      # For API only (diasble in production)
+      - "8081:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    # networks:
+    #   - 'seasoning-external'
+
+  # # SSO
+  # sso:
+  #   image: quay.io/keycloak/keycloak:23.0.3
+  #   volumes:
+  #     - ./seasoning-sso/config/${ENV}-realm.json:/opt/keycloak/data/import/${ENV}-realm.json
+  #   environment:
+  #     # DB related
+  #     KC_DB: postgres
+  #     KC_DB_URL: jdbc:postgresql://sso-db:5432/keycloak
+  #     KC_DB_USERNAME: ${POSTGRES_USER}
+  #     KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+  #     # KC related
+  #     KC_HOSTNAME: ${AUTH_HOSTNAME}
+  #     KC_HTTP_RELATIVE_PATH: /auth
+  #     KC_HOSTNAME_STRICT_HTTPS: false
+  #     # Not secured but fine behind reverse-proxy
+  #     KC_PROXY: edge
+  #     # Initial account (disable after init)
+  #     # KEYCLOAK_ADMIN: admin
+  #     # KEYCLOAK_ADMIN_PASSWORD: admin
+  #   command: 
+  #     - start
+  #     - --import-realm
+  #   depends_on:
+  #     - sso-db
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.sso-web.rule=Host(`${AUTH_HOSTNAME}`) && PathPrefix(`/auth`)"
+  #     - "traefik.http.routers.sso-web.entrypoints=web"
+  #     - "traefik.http.services.sso.loadbalancer.server.port=8080"
+  #   # networks:
+  #   #   - 'seasoning-external'
+  #   #   - 'sso-internal'
+
+  # # SSO DATABASE
+  # sso-db:
+  #   image: postgres:15
+  #   volumes:
+  #     - ./seasoning-sso/sso-db/:/var/lib/postgresql/data/
+  #   environment:
+  #     POSTGRES_DB: keycloak
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   networks:
+  #     - 'sso-internal'
+
+  # API GATEWAY
+  gateway:
+    build: ./seasoning-api
+    env_file:
+      - ./seasoning-api/.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gateway-web.rule=Host(`${GATEWAY_HOSTNAME}`)"
+      - "traefik.http.routers.gateway-web.entrypoints=web"
+      - "traefik.http.services.gateway.loadbalancer.server.port=8080"
+    # networks:
+    #   - 'seasoning-external'
+    #   - 'seasoning-internal'
+
+  # # OFFERS MS
+  # offers:
+  #   build: ./seasoning-offers
+  #   environment:
+  #     - "DB_HOST=postgres"
+  #     - "DB_PORT=5432"
+  #     - "DB_DATABASE=offers"
+  #     - "DB_USER=MS"
+  #     - "DB_PASSWORD=Offers2842"
+  #   networks:
+  #     - 'seasoning-internal'
+  #     - 'seasoning-offers-internal'
+
+  # # OFFERS DB
+  # postgres:
+  #   image: 'postgres:latest'
+  #   container_name: "postgres"
+  #   environment:
+  #     - 'POSTGRES_DB=offers'
+  #     - 'POSTGRES_PASSWORD=Offers2842'
+  #     - 'POSTGRES_USER=MS'
+  #   networks:
+  #    - 'seasoning-offers-internal'
+  #   ports:
+  #     - "5432:5432"
+
+  # PROFILE MS
+  profile:
+    build: ./seasoning-profile
+    environment:
+      PROFILE_DB_URL: jdbc:postgresql://profile-db/profile
+      PROFILE_DB_USER: profile
+      PROFILE_DB_PWD: profile
+      PROFILE_MS_PORT: 8084
+    # networks:
+    #   - 'seasoning-internal'
+    #   - 'seasoning-profile-internal'
+    depends_on:
+      - profile-db
+
+  # PROFILE DB
+  profile-db:
+    image: postgres:latest
+    container_name: profile-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: profile
+      POSTGRES_USER: profile
+      POSTGRES_PASSWORD: profile
+    volumes:
+      - ./dbs/profile-db:/var/lib/postgresql/data
+    # networks:
+    #   - 'seasoning-profile-internal'
+    
+networks:
+  seasoning-external: {}
+  seasoning-internal: {}
+  seasoning-profile-internal: {}
+  seasoning-offers-internal: {}
+  sso-internal: {}
