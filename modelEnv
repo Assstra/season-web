@@ -1,0 +1,11 @@
+# http:// or https://
+PROTO=
+HOSTNAME=
+GATEWAY_HOSTNAME=
+
+# local or production
+ENV=
+
+# SSO-DB
+POSTGRES_USER=
+POSTGRES_PASSWORD=

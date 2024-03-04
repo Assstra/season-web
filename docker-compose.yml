@@ -1,0 +1,86 @@
+services:
+
+  # REVERSE PROXY
+  traefik:
+    image: "traefik:v2.10"
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  # SSO
+  sso:
+    image: quay.io/keycloak/keycloak:23.0.3
+    volumes:
+      - ./seasoning-sso/config/${ENV}-realm.json:/opt/keycloak/data/import/${ENV}-realm.json
+    environment:
+      # DB related
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://sso-db:5432/keycloak
+      KC_DB_USERNAME: ${POSTGRES_USER}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      # KC related
+      KC_HOSTNAME: ${AUTH_HOSTNAME}
+      KC_HOSTNAME_STRICT_HTTPS: false
+      # Not secured but fine behind reverse-proxy
+      KC_PROXY: edge
+      # Initial account (disable after init)
+      # KEYCLOAK_ADMIN: admin
+      # KEYCLOAK_ADMIN_PASSWORD: admin
+    command: 
+      - start
+      - --import-realm
+    depends_on:
+      - sso-db
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.sso-web.rule=Host(`${AUTH_HOSTNAME}`)"
+      - "traefik.http.routers.sso-web.entrypoints=web"
+
+      - "traefik.http.routers.sso-web.middlewares=redirect-https"
+      - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
+
+      - "traefik.http.routers.sso-websecure.rule=Host(`${AUTH_HOSTNAME}`)"
+      - "traefik.http.routers.sso-websecure.entrypoints=websecure"
+      - "traefik.http.routers.sso-websecure.tls=true"
+      - "traefik.http.routers.sso-websecure.tls.certresolver=letsencrypt"
+
+      - "traefik.http.services.sso.loadbalancer.server.port=8080"
+      
+  # SSO DATABASE
+  sso-db:
+    image: postgres:15
+    volumes:
+      - ./seasoning-sso/sso-db/:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+  # API GATEWAY
+  gateway:
+    build: ./seasoning-api
+    env_file:
+      - ./seasoning-api/.env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gateway-web.rule=Host(`${GATEWAY_HOSTNAME}`)"
+      - "traefik.http.routers.gateway-web.entrypoints=web"
+
+      - "traefik.http.routers.gateway-web.middlewares=gateway-https"
+      - "traefik.http.middlewares.gateway-https.redirectscheme.scheme=https"
+
+      - "traefik.http.routers.gateway-websecure.rule=Host(`${GATEWAY_HOSTNAME}`)"
+      - "traefik.http.routers.gateway-websecure.entrypoints=websecure"
+      - "traefik.http.routers.gateway-websecure.tls=true"
+      - "traefik.http.routers.gateway-websecure.tls.certresolver=letsencrypt"
+
+      - "traefik.http.services.gateway.loadbalancer.server.port=8080"
